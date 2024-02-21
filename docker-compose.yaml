@@ -1,0 +1,83 @@
+version: "3.5"
+services:
+  influxdb:
+    image: influxdb:1.8-alpine
+    environment:
+      - INFLUXDB_DB=influx
+      - INFLUXDB_ADMIN_USER=admin
+      - INFLUXDB_ADMIN_PASSWORD=password
+    volumes:
+      - influxdb:/var/lib/influxdb
+
+  loki:
+    image: grafana/loki:2.8.6
+    command: -config.file=/etc/loki/local-config.yaml
+    volumes:
+      - loki:/loki
+
+  telegraf:
+    image: telegraf:1.28
+    restart: no
+    depends_on: [influxdb, loki]
+    configs:
+      - source: telegraf
+        target: /etc/telegraf/telegraf.conf
+
+  grafana:
+    image: grafana/grafana:10.2.0
+    depends_on: [influxdb, loki]
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=password
+      - GF_INSTALL_PLUGINS=
+    ports:
+      - "33000:3000"
+    volumes:
+      - grafana:/var/lib/grafana
+      - ./grafana/:/etc/grafana/provisioning/
+
+configs:
+  telegraf:
+    content: |
+      [global_tags]
+      [agent]
+        hostname = "telegraf"
+        omit_hostname = false
+
+      [[inputs.nats_consumer]]
+        servers = ["${NATS}"]
+        subjects = ["sponsor.*.sfh.*.provider.*.app.${APPID}.metrics.*"]
+        username = "openid"
+        password = "${TOKEN}"
+        data_format = "influx"
+
+      [[processors.regex]]
+        [[processors.regex.tags]]
+          key = "subject"
+          pattern = "^sponsor\\.\\d+\\.sfh\\.\\d+\\.provider\\.\\w+\\.app\\.\\d+\\.(logs|metrics)[\\.\\w]*$"
+          replacement = "$${1}"
+          result_key = "type"
+
+      [[outputs.influxdb]]
+        urls = ["http://influxdb:8086"]
+        database = "influx"
+        username = "org-admin"
+        password = "password"
+        [outputs.influxdb.tagpass]
+          type = ["metrics"]
+
+      [[outputs.loki]]
+        domain = "http://loki:3100"
+        [outputs.loki.tagpass]
+          type = ["logs"]
+
+      # [[outputs.file]]
+      #   files = ["stdout"]
+      #   data_format = "influx"
+      #   [outputs.file.tagpass]
+      #     type = ["metrics"]
+
+volumes:
+  influxdb: {}
+  grafana: {}
+  loki: {}
