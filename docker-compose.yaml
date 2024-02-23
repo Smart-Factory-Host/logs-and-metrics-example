@@ -10,7 +10,7 @@ services:
       - influxdb:/var/lib/influxdb
 
   loki:
-    image: grafana/loki:2.8.6
+    image: grafana/loki:2.8.8
     command: -config.file=/etc/loki/local-config.yaml
     volumes:
       - loki:/loki
@@ -24,7 +24,7 @@ services:
         target: /etc/telegraf/telegraf.conf
 
   grafana:
-    image: grafana/grafana:10.2.0
+    image: grafana/grafana:10.2.4
     depends_on: [influxdb, loki]
     environment:
       - GF_SECURITY_ADMIN_USER=admin
@@ -46,7 +46,7 @@ configs:
 
       [[inputs.nats_consumer]]
         servers = ["${NATS}"]
-        subjects = ["sponsor.*.sfh.*.provider.*.app.${APPID}.metrics.*"]
+        subjects = ["sponsor.${SPONSORID}.sfh.${SFHID}.provider.${PROVIDERID}.app.${APPID}.>"]
         username = "openid"
         password = "${TOKEN}"
         data_format = "influx"
@@ -71,11 +71,11 @@ configs:
         [outputs.loki.tagpass]
           type = ["logs"]
 
-      # [[outputs.file]]
-      #   files = ["stdout"]
-      #   data_format = "influx"
-      #   [outputs.file.tagpass]
-      #     type = ["metrics"]
+      [[outputs.file]]
+        files = ["stdout"]
+        data_format = "influx"
+        [outputs.file.tagpass]
+          type = ["metrics"]
 
 volumes:
   influxdb: {}

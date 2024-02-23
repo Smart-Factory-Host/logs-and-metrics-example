@@ -32,41 +32,4 @@ Point your browser to [grafana](http://localhost:33000/explore), login as user `
 
 The diagram below shows the containers set up after running `docker-compose up`.
 
-```plantuml
-@startuml
-title "overview"
-
-frame "SFH Management Plattform" {
-    component "Logs\n&\nMetrics" as nats
-    interface "nats" as mpnats
-    nats -l- mpnats
-}
-
-frame "Compose File" {
-    component "telegraf" as telegraf
-    telegraf ....> mpnats
-
-    database loki
-    interface logfmt as logfmt
-    loki -- logfmt
-    telegraf .> logfmt
-    interface "LogQL" as logql
-    logql - loki
-
-    database influx as oinflux
-    interface "Influx Line Protocol" as ilp
-    oinflux -- ilp
-    ilp <. telegraf
-    interface "InfluxQL" as iql
-    oinflux - iql
-
-    component grafana
-    iql <. grafana
-    grafana .> logql
-}
-
-actor "YOU" as user
-user ..>grafana
-
-@enduml
-```
+![overview](images/overview.svg)
