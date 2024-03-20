@@ -10,7 +10,7 @@ services:
       - influxdb:/var/lib/influxdb
 
   loki:
-    image: grafana/loki:2.8.8
+    image: grafana/loki:2.9.5
     command: -config.file=/etc/loki/local-config.yaml
     volumes:
       - loki:/loki
@@ -58,6 +58,23 @@ configs:
           replacement = "$${1}"
           result_key = "type"
 
+      [[processors.starlark]]
+        order = 1
+        source = '''
+      def apply(metric):
+        if metric.name != "pods":
+          return [metric]
+        if "sfh-app-id" in metric.tags:
+          metric.tags["sfh_app_id"] = metric.tags.pop("sfh-app-id")
+        if "sfh-id" in metric.tags:
+          metric.tags["sfh_id"] = metric.tags.pop("sfh-id")
+        if "sfh-sponsor-id" in metric.tags:
+          metric.tags["sfh_sponsor_id"] = metric.tags.pop("sfh-sponsor-id")
+        if "sfh-app-provider-id" in metric.tags:
+          metric.tags["sfh_provider_id"] = metric.tags.pop("sfh-app-provider-id")
+        return [metric]
+        '''
+
       [[outputs.influxdb]]
         urls = ["http://influxdb:8086"]
         database = "influx"
@@ -75,7 +92,7 @@ configs:
         files = ["stdout"]
         data_format = "influx"
         [outputs.file.tagpass]
-          type = ["metrics"]
+          type = ["metrics", "logs"]
 
 volumes:
   influxdb: {}
