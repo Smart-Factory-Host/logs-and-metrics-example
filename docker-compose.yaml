@@ -8,20 +8,31 @@ services:
       - INFLUXDB_ADMIN_PASSWORD=password
     volumes:
       - influxdb:/var/lib/influxdb
+    networks: [org]
 
   loki:
     image: grafana/loki:2.8.8
     command: -config.file=/etc/loki/local-config.yaml
+    ports:
+    - "3100:3100"
     volumes:
       - loki:/loki
+    networks: [org]
 
   telegraf:
-    image: telegraf:1.28
+    build: ./telegraf/lokilogs-plugin
     restart: no
     depends_on: [influxdb, loki]
-    configs:
-      - source: telegraf
-        target: /etc/telegraf/telegraf.conf
+    volumes:
+      - ./telegraf/telegraf.conf:/etc/telegraf/telegraf.conf
+    networks: [org]
+    environment:
+      - TOKEN=${TOKEN}
+      - SPONSORID=${SPONSORID}
+      - SFHID=${SFHID}
+      - PROVIDERID=${PROVIDERID}
+      - APPID=${APPID}
+      - NATS=${NATS}
 
   grafana:
     image: grafana/grafana:10.2.4
@@ -35,49 +46,15 @@ services:
     volumes:
       - grafana:/var/lib/grafana
       - ./grafana/:/etc/grafana/provisioning/
-
-configs:
-  telegraf:
-    content: |
-      [global_tags]
-      [agent]
-        hostname = "telegraf"
-        omit_hostname = false
-
-      [[inputs.nats_consumer]]
-        servers = ["${NATS}"]
-        subjects = ["sponsor.${SPONSORID}.sfh.${SFHID}.provider.${PROVIDERID}.app.${APPID}.>"]
-        username = "openid"
-        password = "${TOKEN}"
-        data_format = "influx"
-
-      [[processors.regex]]
-        [[processors.regex.tags]]
-          key = "subject"
-          pattern = "^sponsor\\.\\d+\\.sfh\\.\\d+\\.provider\\.\\w+\\.app\\.\\d+\\.(logs|metrics)[\\.\\w]*$"
-          replacement = "$${1}"
-          result_key = "type"
-
-      [[outputs.influxdb]]
-        urls = ["http://influxdb:8086"]
-        database = "influx"
-        username = "org-admin"
-        password = "password"
-        [outputs.influxdb.tagpass]
-          type = ["metrics"]
-
-      [[outputs.loki]]
-        domain = "http://loki:3100"
-        [outputs.loki.tagpass]
-          type = ["logs"]
-
-      [[outputs.file]]
-        files = ["stdout"]
-        data_format = "influx"
-        [outputs.file.tagpass]
-          type = ["metrics"]
+    networks: [org]
 
 volumes:
   influxdb: {}
   grafana: {}
   loki: {}
+
+networks:
+  org:
+    name: org
+
+
