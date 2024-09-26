@@ -14,13 +14,13 @@ services:
     image: grafana/loki:2.8.8
     command: -config.file=/etc/loki/local-config.yaml
     ports:
-    - "3100:3100"
+      - "3100:3100"
     volumes:
       - loki:/loki
     networks: [org]
 
   telegraf:
-    build: ./telegraf/lokilogs-plugin
+    image: telegraf:1.32.0-alpine
     restart: no
     depends_on: [influxdb, loki]
     volumes:
@@ -56,5 +56,3 @@ volumes:
 networks:
   org:
     name: org
-
-
