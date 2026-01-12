@@ -33,3 +33,15 @@ Point your browser to [grafana](http://localhost:33000/explore), login as user `
 The diagram below shows the containers set up after running `docker-compose up`.
 
 ![overview](images/overview.svg)
+
+------
+
+## appendix
+
+### stream logs via CLI
+
+```bash
+export APPID=...
+export TOKEN="ey..."
+nats --user openid --password $TOKEN -s nats://nats.smartfactoryhost.com  subscribe "sponsor.*.sfh.*.provider.*.app.$APPID.logs.>"
+```
