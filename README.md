@@ -32,7 +32,7 @@ TOKEN="<token>" APPID="<appId>" docker compose up
 
 ## explore metrics
 
-Point your browser to [grafana](http://localhost:33000/explore), login as user `admin` with password `password` and explore the data available.
+Point your browser to [grafana](http://localhost:33000/d/b494e75a-e3ce-44fc-b8fa-8685c330a538/resources-dashboard-example?orgId=1&refresh=30s), login as user `admin` with password `password` and explore the data becoming available.
 
 ## explore traces
 

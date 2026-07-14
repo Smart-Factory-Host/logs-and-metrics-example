@@ -2,6 +2,7 @@ apiVersion: 1
 
 datasources:
   - name: InfluxDB_v1
+    uid: P4B5EB7AC8565B06F
     type: influxdb
     access: proxy
     user: admin

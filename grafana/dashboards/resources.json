@@ -1,0 +1,177 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": { "type": "grafana", "uid": "-- Grafana --" },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 1,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": { "type": "influxdb", "uid": "P4B5EB7AC8565B06F" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": { "type": "linear" },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": { "group": "A", "mode": "none" },
+            "thresholdsStyle": { "mode": "off" }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "red", "value": 80 }
+            ]
+          },
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "id": 1,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": { "mode": "single", "sort": "none" }
+      },
+      "targets": [
+        {
+          "alias": "$tag_containerName",
+          "datasource": { "type": "influxdb", "uid": "P4B5EB7AC8565B06F" },
+          "groupBy": [{ "params": ["containerName::tag"], "type": "tag" }],
+          "hide": false,
+          "measurement": "kubernetes_pod_container",
+          "orderByTime": "ASC",
+          "policy": "default",
+          "query": "SELECT \"cpu_usage_nanocores\" FROM \"kubernetes_pod_container\" WHERE $timeFilter GROUP BY \"containerName\"::tag",
+          "rawQuery": false,
+          "refId": "CPU",
+          "resultFormat": "time_series",
+          "select": [
+            [
+              { "params": ["cpu_usage_nanocores"], "type": "field" },
+              { "params": [" / 1000000000"], "type": "math" }
+            ]
+          ],
+          "tags": []
+        }
+      ],
+      "title": "CPU allocation",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "influxdb", "uid": "P4B5EB7AC8565B06F" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": { "type": "linear" },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": { "group": "A", "mode": "none" },
+            "thresholdsStyle": { "mode": "off" }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "red", "value": 80 }
+            ]
+          },
+          "unit": "bytes"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "id": 2,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": { "mode": "single", "sort": "none" }
+      },
+      "targets": [
+        {
+          "alias": "$tag_containerName",
+          "datasource": { "type": "influxdb", "uid": "P4B5EB7AC8565B06F" },
+          "groupBy": [{ "params": ["containerName::tag"], "type": "tag" }],
+          "hide": false,
+          "measurement": "kubernetes_pod_container",
+          "orderByTime": "ASC",
+          "policy": "default",
+          "query": "SELECT \"cpu_usage_nanocores\" FROM \"kubernetes_pod_container\" WHERE $timeFilter GROUP BY \"containerName\"::tag",
+          "rawQuery": false,
+          "refId": "CPU",
+          "resultFormat": "time_series",
+          "select": [[{ "params": ["memory_rss_bytes"], "type": "field" }]],
+          "tags": []
+        }
+      ],
+      "title": "memory allocation",
+      "type": "timeseries"
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "tags": [],
+  "templating": { "list": [] },
+  "time": { "from": "now-30m", "to": "now" },
+  "timepicker": {},
+  "timezone": "",
+  "title": "resources dashboard example",
+  "uid": "b494e75a-e3ce-44fc-b8fa-8685c330a538",
+  "version": 1,
+  "weekStart": ""
+}
