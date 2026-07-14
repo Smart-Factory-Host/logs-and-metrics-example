@@ -1,35 +1,58 @@
 @startuml overview
 title "overview"
 
-frame "SFH Management Plattform" {
-    component "Logs\n&\nMetrics" as nats
-    interface "nats" as mpnats
-    nats -l- mpnats
+frame "SFH Edge" {
+    component "**Edge** Logs\n& Metrics\n& Traces" as edgelmt
+    interface "nats" as edgenats
+    edgelmt -l- edgenats
+
+    node "SFH apps" as apps
+    edgelmt <.. apps
 }
 
-frame "Compose File" {
-    component "telegraf" as telegraf
-    telegraf ....> mpnats
+frame "SFH Management Plattform" {
+    component "**Cloud** Logs\n& Metrics\n& Traces" as lmt
+    interface "nats" as mpnats
+    lmt -l- mpnats
+}
+mpnats <.... edgenats
 
-    database loki
-    interface logfmt as logfmt
-    loki -- logfmt
-    telegraf .> logfmt
-    interface "LogQL" as logql
-    logql - loki
+frame "Compose File" #Ivory  {
+    package "logs + metrics" {
+        component "telegraf" as telegraf
+        telegraf ....> mpnats
 
-    database influx as oinflux
-    interface "Influx Line Protocol" as ilp
-    oinflux -- ilp
-    ilp <. telegraf
-    interface "InfluxQL" as iql
-    oinflux - iql
+        database loki
+        interface logfmt as logfmt
+        loki -- logfmt
+        telegraf .> logfmt
+        interface "LogQL" as logql
+        logql - loki
 
-    component grafana
-    iql <. grafana
-    grafana .> logql
+        database influx as oinflux
+        interface "Influx Line Protocol" as ilp
+        oinflux -- ilp
+        ilp <. telegraf
+        interface "InfluxQL" as iql
+        oinflux - iql
+
+        component grafana
+        iql <. grafana
+        grafana .> logql
+    }
+
+    package traces {
+        component "nats-to-jaeger" as ntj
+        ntj ....> mpnats
+
+        component jaeger
+        interface "otlp" as itraces
+        jaeger -- itraces
+        itraces <. ntj
+    }
 }
 
 actor "YOU" as user
-user ..>grafana
+user ..> grafana
+user ..> jaeger
 @enduml
